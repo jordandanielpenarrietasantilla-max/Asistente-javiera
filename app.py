@@ -70,7 +70,7 @@ with col_centro:
             try:
                 # Nombre del modelo limpio para el nuevo SDK oficial
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-2.0-flash',
                     contents=prompt,
                     config=dict(
                         system_instruction=INSTRUCCION_SISTEMA
