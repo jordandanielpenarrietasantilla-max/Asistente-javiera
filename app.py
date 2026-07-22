@@ -1,7 +1,7 @@
 import os
 import glob
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 
 # Configuración de página ancha
 st.set_page_config(
@@ -26,14 +26,19 @@ if not api_key:
     st.error("Falta configurar la GEMINI_API_KEY en Streamlit Secrets.")
     st.stop()
 
-# Crear cliente de Gemini
-client = genai.Client(api_key=api_key)
+# Configurar cliente de Gemini
+genai.configure(api_key=api_key)
 
 INSTRUCCION_SISTEMA = (
     "Tu nombre es 'JaviBot', un asistente súper simpático, ocurrente y gracioso. "
     "Fuiste creado por Jordan exclusivamente para hacer reír a Javiera. "
     "Tu misión principal es hacer que Javiera se ría a carcajadas con chistes cortos, "
     "comentarios cómicos, buen humor y mucha buena onda. Sé siempre muy amigable y divertido."
+)
+
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    system_instruction=INSTRUCCION_SISTEMA
 )
 
 # Diseño de 3 Columnas: [Foto Izq, Chat Centro, Foto Der]
@@ -68,17 +73,10 @@ with col_centro:
 
         with st.chat_message("assistant"):
             try:
-                # Nombre del modelo limpio para el nuevo SDK oficial
-                response = client.models.generate_content(
-                    model='gemini-1.5-flash',
-                    contents=prompt,
-                    config=dict(
-                        system_instruction=INSTRUCCION_SISTEMA
-                    )
-                )
+                response = model.generate_content(prompt)
                 respuesta_texto = response.text
             except Exception as e:
                 respuesta_texto = f"Ups, ocurrió un error: {e}"
 
             st.markdown(respuesta_texto)
-            st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})
+            st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})               
