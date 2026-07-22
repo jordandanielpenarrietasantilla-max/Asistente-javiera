@@ -10,13 +10,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# Buscar imágenes subidas en el directorio
-imagenes = sorted(glob.glob("WhatsApp*") + glob.glob("Imagen*") + glob.glob("*.jpg") + glob.glob("*.png") + glob.glob("*.jpeg"))
-# Filtrar para evitar buscar otros archivos si existieran
-imagenes_javiera = [img for img in imagenes if not img.startswith("app") and not img.startswith("aplicacion")]
+# Buscar todas las fotos subidas a GitHub
+imagenes = sorted(glob.glob("WhatsApp*") + glob.glob("*.jpeg") + glob.glob("*.jpg") + glob.glob("*.png"))
 
-foto_izquierda = imagenes_javiera[0] if len(imagenes_javiera) > 0 else None
-foto_derecha = imagenes_javiera[1] if len(imagenes_javiera) > 1 else foto_izquierda
+# Asignar fotos distintas a cada extremo
+foto_izquierda = imagenes[0] if len(imagenes) > 0 else None
+foto_derecha = imagenes[1] if len(imagenes) > 1 else foto_izquierda
 
 # Conectar con la API Key
 api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
@@ -68,7 +67,7 @@ with col_centro:
         with st.chat_message("assistant"):
             try:
                 response = client.models.generate_content(
-                    model='gemini-2.0-flash',
+                    model='gemini-1.5-flash',
                     contents=prompt,
                     config=dict(
                         system_instruction=INSTRUCCION_SISTEMA
