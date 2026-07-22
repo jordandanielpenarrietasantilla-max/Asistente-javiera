@@ -1,7 +1,7 @@
 import os
 import glob
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 
 # Configuración de página ancha
 st.set_page_config(
@@ -26,8 +26,8 @@ if not api_key:
     st.error("Falta configurar la GEMINI_API_KEY en Streamlit Secrets.")
     st.stop()
 
-# Configurar cliente de Gemini
-genai.configure(api_key=api_key)
+# Crear cliente oficial de Gemini
+client = genai.Client(api_key=api_key)
 
 INSTRUCCION_SISTEMA = (
     "Tu nombre es 'JaviBot', un asistente súper simpático, ocurrente y gracioso. "
@@ -36,12 +36,7 @@ INSTRUCCION_SISTEMA = (
     "comentarios cómicos, buen humor y mucha buena onda. Sé siempre muy amigable y divertido."
 )
 
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
-    system_instruction=INSTRUCCION_SISTEMA
-)
-
-# Diseño de 3 Columnas: [Foto Izq, Chat Centro, Foto Der]
+# Diseño de 3 Columnas
 col_izq, col_centro, col_der = st.columns([1, 2, 1])
 
 # --- EXTREMO IZQUIERDO ---
@@ -72,11 +67,25 @@ with col_centro:
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            try:
-                response = model.generate_content(prompt)
-                respuesta_texto = response.text
-            except Exception as e:
-                respuesta_texto = f"Ups, ocurrió un error: {e}"
+            respuesta_texto = ""
+            # Lista de modelos a intentar en orden por si alguno falla
+            modelos_a_probar = ['gemini-1.5-flash-8b', 'gemini-2.0-flash', 'gemini-1.5-flash']
+            
+            for mod in modelos_a_probar:
+                try:
+                    response = client.models.generate_content(
+                        model=mod,
+                        contents=prompt,
+                        config=dict(system_instruction=INSTRUCCION_SISTEMA)
+                    )
+                    respuesta_texto = response.text
+                    if respuesta_texto:
+                        break # Si respondió bien, salimos del bucle
+                except Exception:
+                    continue # Si falla, intenta el siguiente modelo automáticamente
+
+            if not respuesta_texto:
+                respuesta_texto = "Ups, no se pudo conectar con la API de Google. Revisa tu API Key."
 
             st.markdown(respuesta_texto)
-            st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})               
+            st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})
