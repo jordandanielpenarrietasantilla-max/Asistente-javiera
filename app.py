@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # Buscar imágenes subidas en el directorio
-imagenes = sorted(glob.glob("Imagen*") + glob.glob("*.jpg") + glob.glob("*.png") + glob.glob("*.jpeg"))
+imagenes = sorted(glob.glob("WhatsApp*") + glob.glob("Imagen*") + glob.glob("*.jpg") + glob.glob("*.png") + glob.glob("*.jpeg"))
 # Filtrar para evitar buscar otros archivos si existieran
 imagenes_javiera = [img for img in imagenes if not img.startswith("app") and not img.startswith("aplicacion")]
 
@@ -68,7 +68,7 @@ with col_centro:
         with st.chat_message("assistant"):
             try:
                 response = client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-2.0-flash',
                     contents=prompt,
                     config=dict(
                         system_instruction=INSTRUCCION_SISTEMA
