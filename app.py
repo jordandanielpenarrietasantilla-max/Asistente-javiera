@@ -1,4 +1,4 @@
-       import os
+import os
 import streamlit as st
 from google import genai
 
@@ -51,4 +51,4 @@ if prompt := st.chat_input("Escríbeme algo para reírnos un rato..."):
             respuesta_texto = f"Ups, ocurrió un error: {e}"
 
         st.markdown(respuesta_texto)
-        st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})
+        st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})      
