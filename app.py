@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from google import genai
+import google.generativeai as genai
 
 # Configuración visual
 st.set_page_config(page_title="🌸 El Asistente de Javiera", page_icon="🌸")
@@ -15,14 +15,19 @@ if not api_key:
     st.error("Falta configurar la GEMINI_API_KEY en Streamlit.")
     st.stop()
 
-# Crear cliente especificado
-client = genai.Client(api_key=api_key)
+# Configurar la API
+genai.configure(api_key=api_key)
 
 INSTRUCCION_SISTEMA = (
     "Tu nombre es 'JaviBot', un asistente súper simpático, ocurrente y gracioso. "
     "Fuiste creado por Jordan exclusivamente para hacer reír a Javiera. "
     "Tu misión principal es hacer que Javiera se ría a carcajadas con chistes cortos, "
     "comentarios cómicos, buen humor y mucha buena onda. Sé siempre muy amigable y divertido."
+)
+
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    system_instruction=INSTRUCCION_SISTEMA
 )
 
 if "messages" not in st.session_state:
@@ -39,16 +44,10 @@ if prompt := st.chat_input("Escríbeme algo para reírnos un rato..."):
 
     with st.chat_message("assistant"):
         try:
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-                config=dict(
-                    system_instruction=INSTRUCCION_SISTEMA
-                )
-            )
+            response = model.generate_content(prompt)
             respuesta_texto = response.text
         except Exception as e:
             respuesta_texto = f"Ups, ocurrió un error: {e}"
 
         st.markdown(respuesta_texto)
-        st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})      
+        st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})
