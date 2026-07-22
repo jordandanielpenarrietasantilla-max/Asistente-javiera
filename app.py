@@ -3,17 +3,19 @@ import glob
 import streamlit as st
 from google import genai
 
-# Configuración de página ancha (Layout Wide)
+# Configuración de página ancha
 st.set_page_config(
     page_title="🌸 El Asistente de Javiera", 
     page_icon="🌸",
     layout="wide"
 )
 
-# Buscar todas las fotos subidas a GitHub
-imagenes = sorted(glob.glob("WhatsApp*") + glob.glob("*.jpeg") + glob.glob("*.jpg") + glob.glob("*.png"))
+# Buscar imágenes subidas al repositorio
+imagenes = sorted(
+    glob.glob("WhatsApp*") + glob.glob("*.jpeg") + glob.glob("*.jpg") + glob.glob("*.png")
+)
 
-# Asignar fotos distintas a cada extremo
+# Asignar la primera foto a la izquierda y la segunda a la derecha (si existe)
 foto_izquierda = imagenes[0] if len(imagenes) > 0 else None
 foto_derecha = imagenes[1] if len(imagenes) > 1 else foto_izquierda
 
@@ -34,7 +36,7 @@ INSTRUCCION_SISTEMA = (
     "comentarios cómicos, buen humor y mucha buena onda. Sé siempre muy amigable y divertido."
 )
 
-# Crear 3 Columnas: [Foto Izq (1), Chat Centro (2), Foto Der (1)]
+# Diseño de 3 Columnas: [Foto Izq, Chat Centro, Foto Der]
 col_izq, col_centro, col_der = st.columns([1, 2, 1])
 
 # --- EXTREMO IZQUIERDO ---
@@ -66,8 +68,9 @@ with col_centro:
 
         with st.chat_message("assistant"):
             try:
+                # Nombre del modelo limpio para el nuevo SDK oficial
                 response = client.models.generate_content(
-                    model='gemini-1.5-flash',
+                    model='gemini-2.5-flash',
                     contents=prompt,
                     config=dict(
                         system_instruction=INSTRUCCION_SISTEMA
