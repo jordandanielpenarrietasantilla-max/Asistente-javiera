@@ -1,4 +1,4 @@
-import os
+       import os
 import streamlit as st
 from google import genai
 
@@ -15,6 +15,7 @@ if not api_key:
     st.error("Falta configurar la GEMINI_API_KEY en Streamlit.")
     st.stop()
 
+# Crear cliente especificado
 client = genai.Client(api_key=api_key)
 
 INSTRUCCION_SISTEMA = (
@@ -39,9 +40,9 @@ if prompt := st.chat_input("Escríbeme algo para reírnos un rato..."):
     with st.chat_message("assistant"):
         try:
             response = client.models.generate_content(
-                model='gemini-flash-latest',
+                model='gemini-2.5-flash',
                 contents=prompt,
-                config=genai.types.GenerateContentConfig(
+                config=dict(
                     system_instruction=INSTRUCCION_SISTEMA
                 )
             )
