@@ -1,15 +1,16 @@
 import os
 import glob
+import urllib.parse
 import streamlit as st
 from groq import Groq
 
 # Configuración de página
 st.set_page_config(page_title="🌷 El Asistente de Javiera", page_icon="🌷", layout="wide")
 
-# --- ESTILOS PERSONALIZADOS CORREGIDOS (Fondo Rosado, Tulipanes y Chat Visible) ---
+# --- ESTILOS PERSONALIZADOS (Fondo Rosado, Tulipanes y Chat Visible) ---
 st.markdown("""
     <style>
-    /* Forzar fondo rosado pastel en todo Streamlit (evita el fondo negro) */
+    /* Forzar fondo rosado pastel en todo Streamlit */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background: linear-gradient(135deg, #ffe6f0 0%, #ffccd5 50%, #f8edeb 100%) !important;
     }
@@ -147,9 +148,7 @@ Habla como si estuvieras conversando por WhatsApp.
 
 Sé cercano, espontáneo, divertido, ingenioso y amable.
 
-Haz preguntas cuando tenga sentido para mantener la conversación.
-
-Si Javiera cuenta algo, muestra interés antes de cambiar de tema.
+Si Javiera te pide ver una imagen, foto o dibujo (por ejemplo "muéstrame la playa de Miami", "quiero ver tulipanes", "dibuja un perrito"), dile con entusiasmo que la estás imaginando/creando para ella.
 
 Puedes usar uno o dos emojis cuando encajen 😊💖🌷.
 
@@ -175,20 +174,29 @@ with col2:
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
+    # Mostrar mensajes previos
     for m in st.session_state.messages:
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
+            if "image_url" in m and m["image_url"]:
+                st.image(m["image_url"], use_container_width=True)
 
-    if prompt := st.chat_input("Escribe un mensaje... 🌷"):
-        st.session_state.messages.append({"role":"user","content":prompt})
+    if prompt := st.chat_input("Escribe un mensaje o pide una imagen... 🌷"):
+        st.session_state.messages.append({"role":"user", "content":prompt})
 
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        mensajes = [{"role":"system","content":INSTRUCCION_SISTEMA}] + st.session_state.messages
+        # Detectar si Javiera pide una imagen
+        palabras_clave = ["imagen", "foto", "dibuja", "muéstrame", "ver", "crea", "muestra", "playa", "dibujo"]
+        es_pedido_imagen = any(palabra in prompt.lower() for palabra in palabras_clave)
+
+        mensajes = [{"role":"system","content":INSTRUCCION_SISTEMA}] + [
+            {"role": m["role"], "content": m["content"]} for m in st.session_state.messages
+        ]
 
         with st.chat_message("assistant"):
-            with st.spinner("JaviBot está escribiendo..."):
+            with st.spinner("JaviBot está pensando... 🎨"):
                 try:
                     r = client.chat.completions.create(
                         model="llama-3.3-70b-versatile",
@@ -201,4 +209,18 @@ with col2:
                     texto = f"Error: {e}"
 
             st.markdown(texto)
-            st.session_state.messages.append({"role":"assistant","content":texto})
+
+            # Generar imagen si detecta la intención
+            url_imagen = None
+            if es_pedido_imagen:
+                with st.spinner("Generando tu imagen... 🖼️✨"):
+                    prompt_encoded = urllib.parse.quote(f"beautiful HD aesthetic picture of {prompt}")
+                    url_imagen = f"https://image.pollinations.ai/prompt/{prompt_encoded}?width=800&height=500&nologo=true"
+                    st.image(url_imagen, caption="✨ Una imagen especial para ti 🎨", use_container_width=True)
+
+            # Guardar en el historial
+            st.session_state.messages.append({
+                "role": "assistant", 
+                "content": texto,
+                "image_url": url_imagen
+            })
