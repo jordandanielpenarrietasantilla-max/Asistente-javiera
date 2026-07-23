@@ -36,8 +36,7 @@ INSTRUCCION_SISTEMA = (
 )
 
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
-    system_instruction=INSTRUCCION_SISTEMA
+    model_name="gemini-pro"
 )
 
 # Diseño de 3 Columnas
@@ -69,7 +68,9 @@ with col_centro:
 
         with st.chat_message("assistant"):
             try:
-                response = model.generate_content(prompt)
+                # Incluimos el contexto en el prompt para gemini-pro
+                prompt_con_instruccion = f"{INSTRUCCION_SISTEMA}\n\nJaviera/Jordan dice: {prompt}"
+                response = model.generate_content(prompt_con_instruccion)
                 respuesta_texto = response.text
             except Exception as e:
                 respuesta_texto = f"Error directo de la API: {e}"
