@@ -1,42 +1,34 @@
 import streamlit as st
 import google.generativeai as genai
 
-# Configurar API KEY
+# API KEY
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-# ✅ MODELO NUEVO (IMPORTANTE)
-model = genai.GenerativeModel("gemini-1.5-flash")
-
-# Configuración
-st.set_page_config(page_title="🌸 Javiera 💖")
+# ⚠️ IMPORTANTE: usar modelo correcto con método correcto
+model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 st.title("🌸 El Asistente de Javiera 💖")
 
-# Historial
+# historial
 if "chat" not in st.session_state:
     st.session_state.chat = []
 
-# Input
 user_input = st.text_input("Escríbele algo...")
 
 if user_input:
     st.session_state.chat.append(("Tú", user_input))
 
     try:
-        prompt = f"""
-        Eres Javiera 💖, una novia:
-        - Cariñosa
-        - Coqueta 😏
-        - Dulce
-        - Divertida
+        # 🔥 MÉTODO CORRECTO
+        response = model.generate_content(
+            user_input,
+            generation_config={
+                "temperature": 0.9,
+                "top_p": 1,
+                "max_output_tokens": 200,
+            }
+        )
 
-        Responde como una pareja real.
-
-        Mensaje:
-        {user_input}
-        """
-
-        response = model.generate_content(prompt)
         reply = response.text
 
     except Exception as e:
@@ -44,6 +36,5 @@ if user_input:
 
     st.session_state.chat.append(("Javiera 💕", reply))
 
-# Mostrar chat
 for role, msg in st.session_state.chat:
     st.write(f"**{role}:** {msg}")
