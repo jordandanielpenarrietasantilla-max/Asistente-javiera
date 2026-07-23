@@ -6,14 +6,50 @@ from groq import Groq
 # Configuración de página
 st.set_page_config(page_title="🌷 El Asistente de Javiera", page_icon="🌷", layout="wide")
 
-# --- ESTILOS PERSONALIZADOS (Rosado Pastel & Texto Legible) ---
+# --- ESTILOS PERSONALIZADOS: Lluvia de Tulipanes y Rosado Pastel ---
 st.markdown("""
     <style>
-    /* Fondo principal rosado pastel suave */
+    /* Fondo principal rosado pastel */
     .stApp {
         background: linear-gradient(135deg, #ffe6f0 0%, #ffccd5 50%, #f8edeb 100%);
         color: #4a154b;
+        position: relative;
+        overflow-x: hidden;
     }
+
+    /* ANIMACIÓN DE TULIPANES FLOTANTES DE FONDO */
+    @keyframes tulipFall {
+        0% {
+            transform: translateY(-10vh) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(105vh) rotate(360deg);
+            opacity: 0.2;
+        }
+    }
+
+    .tulip-bg {
+        position: fixed;
+        top: -10%;
+        font-size: 28px;
+        user-select: none;
+        pointer-events: none;
+        z-index: 0;
+        animation: tulipFall linear infinite;
+    }
+
+    /* Posiciones y tiempos para cada tulipán flotante */
+    .t1  { left: 5%;  animation-duration: 10s; animation-delay: 0s; }
+    .t2  { left: 15%; animation-duration: 12s; animation-delay: 2s; font-size: 35px; }
+    .t3  { left: 25%; animation-duration: 8s;  animation-delay: 4s; }
+    .t4  { left: 35%; animation-duration: 14s; animation-delay: 1s; font-size: 40px; }
+    .t5  { left: 45%; animation-duration: 9s;  animation-delay: 3s; }
+    .t6  { left: 55%; animation-duration: 11s; animation-delay: 5s; font-size: 32px; }
+    .t7  { left: 65%; animation-duration: 13s; animation-delay: 0.5s; }
+    .t8  { left: 75%; animation-duration: 10s; animation-delay: 2.5s; font-size: 38px; }
+    .t9  { left: 85%; animation-duration: 15s; animation-delay: 1.5s; }
+    .t10 { left: 95%; animation-duration: 9.5s; animation-delay: 3.5s; font-size: 30px; }
     
     /* Títulos y textos principales */
     h1, h2, h3, p, label {
@@ -21,25 +57,26 @@ st.markdown("""
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* Burbujas de chat blancas con borde rosado */
+    /* Burbujas del chat */
     .stChatMessage {
         background-color: rgba(255, 255, 255, 0.95) !important;
         border-radius: 18px !important;
-        border: 1px solid #ffb3c6 !important;
-        box-shadow: 0 4px 10px rgba(255, 179, 198, 0.2);
+        border: 2px solid #ffb3c6 !important;
+        box-shadow: 0 4px 12px rgba(255, 179, 198, 0.3);
         margin-bottom: 12px;
+        z-index: 1;
     }
 
-    /* FIX DEFINITIVO PARA LA CAJA DE TEXTO (CHAT INPUT) */
+    /* Caja de texto del chat */
     .stChatInputContainer, 
     .stChatInputContainer > div,
     [data-testid="stChatInput"] {
         background-color: #ffffff !important;
         border-radius: 20px !important;
         border: 2px solid #ff7096 !important;
+        z-index: 2;
     }
 
-    /* Texto que escribe el usuario */
     .stChatInputContainer textarea,
     [data-testid="stChatInput"] textarea {
         color: #2b0018 !important;
@@ -48,7 +85,6 @@ st.markdown("""
         font-weight: 500 !important;
     }
 
-    /* Texto borroso de ejemplo (placeholder) */
     .stChatInputContainer textarea::placeholder,
     [data-testid="stChatInput"] textarea::placeholder {
         color: #888888 !important;
@@ -59,32 +95,48 @@ st.markdown("""
         border-radius: 22px !important;
         border: 3px solid #ffb3c6 !important;
         box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        z-index: 1;
     }
     </style>
+
+    <!-- TULIPANES CAYENDO EN PANTALLA -->
+    <div class="tulip-bg t1">🌷</div>
+    <div class="tulip-bg t2">🌷</div>
+    <div class="tulip-bg t3">🌸</div>
+    <div class="tulip-bg t4">🌷</div>
+    <div class="tulip-bg t5">🌷</div>
+    <div class="tulip-bg t6">🌸</div>
+    <div class="tulip-bg t7">🌷</div>
+    <div class="tulip-bg t8">🌷</div>
+    <div class="tulip-bg t9">🌸</div>
+    <div class="tulip-bg t10">🌷</div>
 """, unsafe_allow_html=True)
 
-# Lógica de imágenes
-imagenes = sorted(
-    glob.glob("WhatsApp*") +
-    glob.glob("*.jpg") +
-    glob.glob("*.jpeg") +
-    glob.glob("*.png")
+# Búsqueda de imágenes
+todas_las_fotos = (
+    glob.glob("*.jpg") + 
+    glob.glob("*.jpeg") + 
+    glob.glob("*.png") + 
+    glob.glob("*.JPG") + 
+    glob.glob("*.JPEG") + 
+    glob.glob("*.PNG")
 )
 
-foto_izquierda = imagenes[0] if len(imagenes) > 0 else None
-
-# Buscar foto del perrito si existe, o usar la segunda foto disponible
+foto_izquierda = None
 foto_derecha = None
-for img in imagenes:
-    if "perro" in img.lower():
-        foto_derecha = img
-        break
-if not foto_derecha and len(imagenes) > 1:
-    foto_derecha = imagenes[1]
-elif not foto_derecha:
-    foto_derecha = foto_izquierda
 
-# API Key
+for f in todas_las_fotos:
+    if "javiera" in f.lower():
+        foto_izquierda = f
+    elif "perro" in f.lower():
+        foto_derecha = f
+
+if not foto_izquierda and len(todas_las_fotos) > 0:
+    foto_izquierda = todas_las_fotos[0]
+if not foto_derecha and len(todas_las_fotos) > 1:
+    foto_derecha = todas_las_fotos[1]
+
+# API Key y Cliente Groq
 api_key = st.secrets.get("GROQ_API_KEY") or os.environ.get("GROQ_API_KEY")
 
 if not api_key:
@@ -128,8 +180,8 @@ with col3:
         st.image(foto_derecha, caption="🐾 El consentido 🐶", use_container_width=True)
 
 with col2:
-    st.title("🌷 El Asistente de Javiera")
-    st.write("Creado por Jordan con mucho amor 💖")
+    st.title("🌷 El Asistente de Javiera 🌷")
+    st.write("Creado por Jordan con mucho cariño 💖 🌷")
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
