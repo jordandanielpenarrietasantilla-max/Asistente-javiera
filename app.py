@@ -1,77 +1,110 @@
 import os
 import glob
 import streamlit as st
-from google import genai
+from groq import Groq
 
-# Configuración de página ancha
+# Configuración
 st.set_page_config(
-    page_title="🌸 El Asistente de Javiera", 
+    page_title="🌸 El Asistente de Javiera",
     page_icon="🌸",
     layout="wide"
 )
 
-# Buscar imágenes subidas al repositorio
+# Buscar imágenes
 imagenes = sorted(
-    glob.glob("WhatsApp*") + glob.glob("*.jpeg") + glob.glob("*.jpg") + glob.glob("*.png")
+    glob.glob("WhatsApp*") +
+    glob.glob("*.jpg") +
+    glob.glob("*.jpeg") +
+    glob.glob("*.png")
 )
 
 foto_izquierda = imagenes[0] if len(imagenes) > 0 else None
 foto_derecha = imagenes[1] if len(imagenes) > 1 else foto_izquierda
 
-# Obtener API Key
-api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+# API KEY
+api_key = st.secrets.get("GROQ_API_KEY") or os.environ.get("GROQ_API_KEY")
 
 if not api_key:
-    st.error("Falta configurar la GEMINI_API_KEY en Streamlit Secrets.")
+    st.error("Falta configurar la GROQ_API_KEY")
     st.stop()
 
-# Crear cliente con la librería nueva oficial
-client = genai.Client(api_key=api_key)
+client = Groq(api_key=api_key)
 
-INSTRUCCION_SISTEMA = (
-    "Tu nombre es 'JaviBot', un asistente súper simpático, ocurrente y gracioso. "
-    "Fuiste creado por Jordan exclusivamente para hacer reír a Javiera. "
-    "Tu misión principal es hacer que Javiera se ría a carcajadas con chistes cortos, "
-    "comentarios cómicos, buen humor y mucha buena onda. Sé siempre muy amigable y divertido."
-)
+INSTRUCCION_SISTEMA = """
+Tu nombre es JaviBot.
 
-# Diseño de 3 Columnas
-col_izq, col_centro, col_der = st.columns([1, 2, 1])
+Fuiste creado por Jordan exclusivamente para hacer feliz a Javiera.
 
-with col_izq:
+Siempre responde con mucho humor, ternura, cariño y buena energía.
+
+Hazla reír con chistes, comentarios ingeniosos, ocurrencias y conversaciones entretenidas.
+
+Nunca seas grosero.
+
+Puedes usar muchos emojis.
+"""
+
+# Diseño
+col1, col2, col3 = st.columns([1,2,1])
+
+with col1:
     if foto_izquierda:
         st.image(foto_izquierda, caption="🌸 Javiera 🌸", use_container_width=True)
 
-with col_der:
+with col3:
     if foto_derecha:
         st.image(foto_derecha, caption="💖 La más linda 💖", use_container_width=True)
 
-with col_centro:
+with col2:
+
     st.title("🌸 El Asistente de Javiera 🌸")
-    st.write("💖 Una aplicación creada por **Jordan** para sacarle risas a Javiera.")
+
+    st.write("💖 Una aplicación creada por Jordan para sacarle muchas sonrisas a Javiera.")
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    for mensaje in st.session_state.messages:
+        with st.chat_message(mensaje["role"]):
+            st.markdown(mensaje["content"])
 
-    if prompt := st.chat_input("Escríbeme algo para reírnos un rato..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    if prompt := st.chat_input("Escríbele algo a JaviBot..."):
+
+        st.session_state.messages.append(
+            {"role":"user","content":prompt}
+        )
+
         with st.chat_message("user"):
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            try:
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash",
-                    contents=prompt,
-                    config=dict(system_instruction=INSTRUCCION_SISTEMA)
-                )
-                respuesta_texto = response.text
-            except Exception as e:
-                respuesta_texto = f"Error directo de la API: {e}"
 
-            st.markdown(respuesta_texto)
-            st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})
+            try:
+
+                respuesta = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[
+                        {
+                            "role":"system",
+                            "content":INSTRUCCION_SISTEMA
+                        },
+                        {
+                            "role":"user",
+                            "content":prompt
+                        }
+                    ],
+                    temperature=0.9,
+                    max_tokens=500
+                )
+
+                texto = respuesta.choices[0].message.content
+
+            except Exception as e:
+
+                texto = f"Error: {e}"
+
+            st.markdown(texto)
+
+            st.session_state.messages.append(
+                {"role":"assistant","content":texto}
+            )
