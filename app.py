@@ -4,20 +4,15 @@ import google.generativeai as genai
 # Configurar API KEY
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-# ✅ Modelo que SÍ funciona
-model = genai.GenerativeModel("gemini-1.0-pro")
+# ✅ MODELO NUEVO (IMPORTANTE)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Configuración de página
-st.set_page_config(
-    page_title="🌸 El Asistente de Javiera",
-    layout="wide"
-)
+# Configuración
+st.set_page_config(page_title="🌸 Javiera 💖")
 
-# Título
-st.markdown("<h1 style='text-align: center;'>🌸 El Asistente de Javiera 💖</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Un bot hecho con amor 💕</p>", unsafe_allow_html=True)
+st.title("🌸 El Asistente de Javiera 💖")
 
-# Estado del chat
+# Historial
 if "chat" not in st.session_state:
     st.session_state.chat = []
 
@@ -35,7 +30,7 @@ if user_input:
         - Dulce
         - Divertida
 
-        Responde como una pareja real, con amor.
+        Responde como una pareja real.
 
         Mensaje:
         {user_input}
@@ -51,4 +46,4 @@ if user_input:
 
 # Mostrar chat
 for role, msg in st.session_state.chat:
-    st.markdown(f"**{role}:** {msg}")
+    st.write(f"**{role}:** {msg}")
