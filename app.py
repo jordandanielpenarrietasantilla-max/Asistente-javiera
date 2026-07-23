@@ -6,7 +6,7 @@ from groq import Groq
 # Configuración de página
 st.set_page_config(page_title="🌷 El Asistente de Javiera", page_icon="🌷", layout="wide")
 
-# --- ESTILOS PERSONALIZADOS (Rosado Pastel & Tulipanes) ---
+# --- ESTILOS PERSONALIZADOS (Rosado Pastel & Texto Legible) ---
 st.markdown("""
     <style>
     /* Fondo principal rosado pastel suave */
@@ -23,19 +23,35 @@ st.markdown("""
 
     /* Burbujas de chat blancas con borde rosado */
     .stChatMessage {
-        background-color: rgba(255, 255, 255, 0.88) !important;
+        background-color: rgba(255, 255, 255, 0.95) !important;
         border-radius: 18px !important;
         border: 1px solid #ffb3c6 !important;
         box-shadow: 0 4px 10px rgba(255, 179, 198, 0.2);
         margin-bottom: 12px;
     }
 
-    /* Caja de entrada de texto */
-    .stChatInputContainer input {
-        border-radius: 20px !important;
-        border: 2px solid #ff85a2 !important;
+    /* FIX DEFINITIVO PARA LA CAJA DE TEXTO (CHAT INPUT) */
+    .stChatInputContainer, 
+    .stChatInputContainer > div,
+    [data-testid="stChatInput"] {
         background-color: #ffffff !important;
-        color: #4a154b !important;
+        border-radius: 20px !important;
+        border: 2px solid #ff7096 !important;
+    }
+
+    /* Texto que escribe el usuario */
+    .stChatInputContainer textarea,
+    [data-testid="stChatInput"] textarea {
+        color: #2b0018 !important;
+        background-color: #ffffff !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+    }
+
+    /* Texto borroso de ejemplo (placeholder) */
+    .stChatInputContainer textarea::placeholder,
+    [data-testid="stChatInput"] textarea::placeholder {
+        color: #888888 !important;
     }
 
     /* Bordes redondeados para las fotos */
@@ -77,7 +93,6 @@ if not api_key:
 
 client = Groq(api_key=api_key)
 
-# Mantenemos tu esencia exacta + pequeños detalles especiales
 INSTRUCCION_SISTEMA = """
 Eres JaviBot.
 
