@@ -6,22 +6,19 @@ from groq import Groq
 # Configuración de página
 st.set_page_config(page_title="🌷 El Asistente de Javiera", page_icon="🌷", layout="wide")
 
-# --- ESTILOS PERSONALIZADOS: Lluvia de Tulipanes y Rosado Pastel ---
+# --- ESTILOS PERSONALIZADOS CORREGIDOS (Fondo Rosado, Tulipanes y Chat Visible) ---
 st.markdown("""
     <style>
-    /* Fondo principal rosado pastel */
-    .stApp {
-        background: linear-gradient(135deg, #ffe6f0 0%, #ffccd5 50%, #f8edeb 100%);
-        color: #4a154b;
-        position: relative;
-        overflow-x: hidden;
+    /* Forzar fondo rosado pastel en todo Streamlit (evita el fondo negro) */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+        background: linear-gradient(135deg, #ffe6f0 0%, #ffccd5 50%, #f8edeb 100%) !important;
     }
 
     /* ANIMACIÓN DE TULIPANES FLOTANTES DE FONDO */
     @keyframes tulipFall {
         0% {
             transform: translateY(-10vh) rotate(0deg);
-            opacity: 1;
+            opacity: 0.9;
         }
         100% {
             transform: translateY(105vh) rotate(360deg);
@@ -31,28 +28,25 @@ st.markdown("""
 
     .tulip-bg {
         position: fixed;
-        top: -10%;
-        font-size: 28px;
+        top: -10vh;
+        font-size: 26px;
         user-select: none;
         pointer-events: none;
-        z-index: 0;
+        z-index: 999;
         animation: tulipFall linear infinite;
     }
 
-    /* Posiciones y tiempos para cada tulipán flotante */
-    .t1  { left: 5%;  animation-duration: 10s; animation-delay: 0s; }
-    .t2  { left: 15%; animation-duration: 12s; animation-delay: 2s; font-size: 35px; }
-    .t3  { left: 25%; animation-duration: 8s;  animation-delay: 4s; }
-    .t4  { left: 35%; animation-duration: 14s; animation-delay: 1s; font-size: 40px; }
-    .t5  { left: 45%; animation-duration: 9s;  animation-delay: 3s; }
-    .t6  { left: 55%; animation-duration: 11s; animation-delay: 5s; font-size: 32px; }
-    .t7  { left: 65%; animation-duration: 13s; animation-delay: 0.5s; }
-    .t8  { left: 75%; animation-duration: 10s; animation-delay: 2.5s; font-size: 38px; }
-    .t9  { left: 85%; animation-duration: 15s; animation-delay: 1.5s; }
-    .t10 { left: 95%; animation-duration: 9.5s; animation-delay: 3.5s; font-size: 30px; }
+    .t1  { left: 5%;  animation-duration: 11s; animation-delay: 0s; }
+    .t2  { left: 18%; animation-duration: 14s; animation-delay: 2s; font-size: 32px; }
+    .t3  { left: 30%; animation-duration: 9s;  animation-delay: 4s; }
+    .t4  { left: 42%; animation-duration: 12s; animation-delay: 1s; font-size: 36px; }
+    .t5  { left: 55%; animation-duration: 10s; animation-delay: 3s; }
+    .t6  { left: 68%; animation-duration: 13s; animation-delay: 5s; font-size: 30px; }
+    .t7  { left: 80%; animation-duration: 9.5s; animation-delay: 0.5s; }
+    .t8  { left: 92%; animation-duration: 15s; animation-delay: 2.5s; font-size: 34px; }
     
     /* Títulos y textos principales */
-    h1, h2, h3, p, label {
+    h1, h2, h3, p, label, span {
         color: #5c0632 !important;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
@@ -64,7 +58,6 @@ st.markdown("""
         border: 2px solid #ffb3c6 !important;
         box-shadow: 0 4px 12px rgba(255, 179, 198, 0.3);
         margin-bottom: 12px;
-        z-index: 1;
     }
 
     /* Caja de texto del chat */
@@ -74,7 +67,6 @@ st.markdown("""
         background-color: #ffffff !important;
         border-radius: 20px !important;
         border: 2px solid #ff7096 !important;
-        z-index: 2;
     }
 
     .stChatInputContainer textarea,
@@ -95,7 +87,6 @@ st.markdown("""
         border-radius: 22px !important;
         border: 3px solid #ffb3c6 !important;
         box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-        z-index: 1;
     }
     </style>
 
@@ -104,12 +95,10 @@ st.markdown("""
     <div class="tulip-bg t2">🌷</div>
     <div class="tulip-bg t3">🌸</div>
     <div class="tulip-bg t4">🌷</div>
-    <div class="tulip-bg t5">🌷</div>
-    <div class="tulip-bg t6">🌸</div>
+    <div class="tulip-bg t5">🌸</div>
+    <div class="tulip-bg t6">🌷</div>
     <div class="tulip-bg t7">🌷</div>
-    <div class="tulip-bg t8">🌷</div>
-    <div class="tulip-bg t9">🌸</div>
-    <div class="tulip-bg t10">🌷</div>
+    <div class="tulip-bg t8">🌸</div>
 """, unsafe_allow_html=True)
 
 # Búsqueda de imágenes
