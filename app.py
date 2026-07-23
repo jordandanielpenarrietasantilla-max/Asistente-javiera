@@ -1,29 +1,78 @@
+import os
+import glob
 import streamlit as st
 import google.generativeai as genai
 
-# API KEY
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+# Configuración de página ancha
+st.set_page_config(
+    page_title="🌸 El Asistente de Javiera", 
+    page_icon="🌸",
+    layout="wide"
+)
 
-# Modelo que funciona con esta versión
-model = genai.GenerativeModel("gemini-pro")
+# Buscar imágenes subidas al repositorio
+imagenes = sorted(
+    glob.glob("WhatsApp*") + glob.glob("*.jpeg") + glob.glob("*.jpg") + glob.glob("*.png")
+)
 
-st.title("🌸 El Asistente de Javiera 💖")
+foto_izquierda = imagenes[0] if len(imagenes) > 0 else None
+foto_derecha = imagenes[1] if len(imagenes) > 1 else foto_izquierda
 
-if "chat" not in st.session_state:
-    st.session_state.chat = []
+# Obtener API Key
+api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 
-user_input = st.text_input("Escríbele algo...")
+if not api_key:
+    st.error("Falta configurar la GEMINI_API_KEY en Streamlit Secrets.")
+    st.stop()
 
-if user_input:
-    st.session_state.chat.append(("Tú", user_input))
+# Configurar librería oficial
+genai.configure(api_key=api_key)
 
-    try:
-        response = model.generate_content(user_input)
-        reply = response.text
-    except Exception as e:
-        reply = f"Error: {e}"
+INSTRUCCION_SISTEMA = (
+    "Tu nombre es 'JaviBot', un asistente súper simpático, ocurrente y gracioso. "
+    "Fuiste creado por Jordan exclusivamente para hacer reír a Javiera. "
+    "Tu misión principal es hacer que Javiera se ría a carcajadas con chistes cortos, "
+    "comentarios cómicos, buen humor y mucha buena onda. Sé siempre muy amigable y divertido."
+)
 
-    st.session_state.chat.append(("Javiera 💕", reply))
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    system_instruction=INSTRUCCION_SISTEMA
+)
 
-for role, msg in st.session_state.chat:
-    st.write(f"**{role}:** {msg}")
+# Diseño de 3 Columnas
+col_izq, col_centro, col_der = st.columns([1, 2, 1])
+
+with col_izq:
+    if foto_izquierda:
+        st.image(foto_izquierda, caption="🌸 Javiera 🌸", use_container_width=True)
+
+with col_der:
+    if foto_derecha:
+        st.image(foto_derecha, caption="💖 La más linda 💖", use_container_width=True)
+
+with col_centro:
+    st.title("🌸 El Asistente de Javiera 🌸")
+    st.write("💖 Una aplicación creada por **Jordan** para sacarle risas a Javiera.")
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Escríbeme algo para reírnos un rato..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            try:
+                response = model.generate_content(prompt)
+                respuesta_texto = response.text
+            except Exception as e:
+                respuesta_texto = f"Error directo de la API: {e}"
+
+            st.markdown(respuesta_texto)
+            st.session_state.messages.append({"role": "assistant", "content": respuesta_texto})
